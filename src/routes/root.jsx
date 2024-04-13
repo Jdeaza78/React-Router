@@ -1,5 +1,11 @@
-import { Outlet, Link, useLoaderData,} from "react-router-dom";
+import { Outlet, NavLink, Link, useLoaderData, Form, useNavigation,} from "react-router-dom";
 import { getContacts } from "../contacts";
+import { getContacts, createContact } from "../contacts";
+
+export async function action() {
+    const contact = await createContact();
+    return { contact };
+  }
 
 export async function loader() {
     const contacts = await getContacts();
@@ -8,11 +14,15 @@ export async function loader() {
 
 export default function Root() {
     const { contacts } = useLoaderData();
+    const navigation = useNavigation();
     return (
       <>
         <div id="sidebar">
           <h1>React Router Contacts</h1>
           <div>
+          <Form method="post">
+            <button type="submit">New</button>
+          </Form>
             <form id="search-form" role="search">
               <input
                 id="q"
@@ -40,6 +50,18 @@ export default function Root() {
             <ul>
               {contacts.map((contact) => (
                 <li key={contact.id}>
+                    <NavLink
+                    to={`contacts/${contact.id}`}
+                    className={({ isActive, isPending }) =>
+                      isActive
+                        ? "active"
+                        : isPending
+                        ? "pending"
+                        : ""
+                    }
+                  >
+                    {/* other code */}
+                  </NavLink>
                   <Link to={`contacts/${contact.id}`}>
                     {contact.first || contact.last ? (
                       <>
@@ -69,6 +91,9 @@ export default function Root() {
           </nav>
         </div>
         <div id="detail"> 
+        className={
+          navigation.state === "loading" ? "loading" : ""
+        }
         <Outlet />
         </div>
       </>
